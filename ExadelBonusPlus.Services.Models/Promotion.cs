@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace ExadelBonusPlus.Services.Models
 {
     public class Promotion
     {
- 
+        [BsonId]
+        public Guid Id { get; set; }
+
         public string Name { get; set; }
 
         public string Description { get; set; }
@@ -18,6 +21,7 @@ namespace ExadelBonusPlus.Services.Models
 
         public int Estimate { get; set; }
 
+        [BsonElement("Location")]
         public Location Location { get; set; }
 
         public List<String> Tags { get; set; }

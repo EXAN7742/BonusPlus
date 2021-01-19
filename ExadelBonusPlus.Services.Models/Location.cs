@@ -9,6 +9,8 @@ namespace ExadelBonusPlus.Services.Models
     {
         public string City { get; set; }
 
+        public string Country { get; set; }
+
         public string Address { get; set; }
 
         public int Latitude { get; set; } //Ширина

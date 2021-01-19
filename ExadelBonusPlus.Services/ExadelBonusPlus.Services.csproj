@@ -7,6 +7,12 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="10.1.1" />
+    <PackageReference Include="MongoDB.Driver" Version="2.11.5" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.11.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ExadelBonusPlus.Services.Models\ExadelBonusPlus.Services.Models.csproj" />
   </ItemGroup>
 
 </Project>
