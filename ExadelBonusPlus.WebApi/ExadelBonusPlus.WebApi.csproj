@@ -5,12 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="10.1.1" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="9.5.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.2.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="5.6.3" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ExadelBonusPlus.DataAccess\ExadelBonusPlus.DataAccess.csproj" />
     <ProjectReference Include="..\ExadelBonusPlus.Services.Models\ExadelBonusPlus.Services.Models.csproj" />
     <ProjectReference Include="..\ExadelBonusPlus.Services\ExadelBonusPlus.Services.csproj" />
   </ItemGroup>

@@ -1,55 +1,70 @@
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Threading.Tasks;
-using ExadelBonusPlus.Services;
-using ExadelBonusPlus.Services.Models;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using System.Threading.Tasks;
+using ExadelBonusPlus.Services.Models;
+using AutoMapper;
+using ExadelBonusPlus.DataAccess;
+using ExadelBonusPlus.Services;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 
 namespace ExadelBonusPlus.WebApi
 {
     public class Startup
     {
-        private IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
         public Startup(IConfiguration configuration)
         {
             _configuration = configuration;
         }
         
-
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<ExadelBonusDbSettings>(
-                _configuration.GetSection(nameof(ExadelBonusDbSettings)));
+            services.Configure<MongoDbSettings>(_configuration.GetSection(
+                nameof(MongoDbSettings)));
 
-            services.AddSingleton<IExadelBonusDbSettings>(sp =>
-                sp.GetRequiredService<IOptions<ExadelBonusDbSettings>>().Value);
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            
+            services.AddControllers().AddFluentValidation();
 
-            services.AddTransient<IPromotionService, PromotionService>();
-
-            services.AddControllers();
-
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Exadel Bonus Plus Api", Version = "v1" });
+            services.AddSwaggerGen(c => {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "exadel-bonus-plus API V1",
+                });
             });
+
+            services.AddTransient<IBonusRepository, BonusRepository>();
+            services.AddTransient<IBonusTagRepository, BonusTagRepository>();
+            services.AddTransient<IBonusService, BonusService>();
+
+            services.AddTransient<IValidator<AddBonusDto>, BonusDtoValidator>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                DeveloperExceptionPageOptions developerExceptionPageOptions = new DeveloperExceptionPageOptions
+                {
+                    SourceCodeLineCount = 5
+                };
+                app.UseDeveloperExceptionPage(developerExceptionPageOptions);
             }
+            app.UseStaticFiles();
 
             app.UseSwagger();
 
-            app.UseSwaggerUI(c => c.SwaggerEndpoint(url: "/swagger/v1/swagger.json", name: "Exadel Bonus Plus Api"));
+            app.UseSwaggerUI(options =>
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Exadel Bonus Plus API v1")
+            );
 
             app.UseRouting();
 
@@ -61,6 +76,7 @@ namespace ExadelBonusPlus.WebApi
                 });
 
                 endpoints.MapControllers();
+
             });
         }
     }

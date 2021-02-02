@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace ExadelBonusPlus.Services.Models
+﻿namespace ExadelBonusPlus.Services.Models
 {
     public class Location
     {
@@ -13,9 +8,9 @@ namespace ExadelBonusPlus.Services.Models
 
         public string Address { get; set; }
 
-        public int Latitude { get; set; } //Ширина
+        public double Latitude { get; set; }
 
-        public int Longitude { get; set; } //Долгота
+        public double Longitude { get; set; }
 
     }
 }
