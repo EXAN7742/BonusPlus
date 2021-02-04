@@ -31,7 +31,12 @@ namespace ExadelBonusPlus.WebApi
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             
-            services.AddControllers().AddFluentValidation();
+            services.AddControllers()
+                .ConfigureApiBehaviorOptions(options =>
+                {
+                    options.SuppressModelStateInvalidFilter = true; //This string need for fluent validation in action filter
+                })
+                .AddFluentValidation();
 
             services.AddSwaggerGen(c => {
                 c.SwaggerDoc("v1", new OpenApiInfo
@@ -45,7 +50,8 @@ namespace ExadelBonusPlus.WebApi
             services.AddTransient<IBonusTagRepository, BonusTagRepository>();
             services.AddTransient<IBonusService, BonusService>();
 
-            services.AddTransient<IValidator<AddBonusDto>, BonusDtoValidator>();
+            services.AddTransient<IValidator<AddBonusDto>, AddBonusDtoValidator>();
+            services.AddTransient<IValidator<BonusDto>, BonusDtoValidator>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

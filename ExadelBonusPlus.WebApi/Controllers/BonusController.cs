@@ -12,6 +12,9 @@ namespace ExadelBonusPlus.WebApi
 {
     [ApiController]
     [Route("api/[controller]/")]
+    [ValidationFilter]
+    [ExceptionFilter]
+    [HttpModelResultFilter]
     public class BonusController : ControllerBase
     {
 
@@ -26,127 +29,46 @@ namespace ExadelBonusPlus.WebApi
         }
 
         [HttpPost]
-        [SwaggerResponse((int)HttpStatusCode.OK, Description = "Bonus added ", Type = typeof(BonusDto))]
+        [SwaggerResponse((int)HttpStatusCode.OK, Description = "Bonus added ", Type = typeof(HttpModel<BonusDto>))]
         [SwaggerResponse((int)HttpStatusCode.InternalServerError)]
-        public async Task<ActionResult<BonusDto>> AddBonusAsync([FromBody] AddBonusDto Bonus)
+        public async Task<ActionResult<HttpModel<BonusDto>>> AddBonusAsync([FromBody] AddBonusDto Bonus)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest("Validation error");
-            }
-            try
-            {
-                return Ok(await _BonusService.AddBonusAsync(Bonus));
-            }
-            catch (InvalidOperationException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, e.Message);
-            }
+            return Ok(await _BonusService.AddBonusAsync(Bonus));
         }
 
         [HttpGet]
-        [SwaggerResponse((int)HttpStatusCode.OK, Description = "All bonus", Type = typeof(List<BonusDto>))]
+        [SwaggerResponse((int)HttpStatusCode.OK, Description = "All bonus", Type = typeof(HttpModel<List<BonusDto>>))]
         [SwaggerResponse((int)HttpStatusCode.InternalServerError)]
-        public async Task<ActionResult<IEnumerable<BonusDto>>> FindAllBonusAsync()
+        public async Task<ActionResult<HttpModel<IEnumerable<BonusDto>>>> FindAllBonusAsync()
         {
-            try
-            {
-                return Ok(await _BonusService.FindAllBonusAsync());
-            }
-            catch (InvalidOperationException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, e.Message);
-            }
-
+            return Ok(await _BonusService.FindAllBonusAsync());
         }
 
         [HttpGet]
         [Route("{id}")]
-        [SwaggerResponse((int)HttpStatusCode.OK, Description = "Bonus by ID", Type = typeof(List<BonusDto>))]
+        [SwaggerResponse((int)HttpStatusCode.OK, Description = "Bonus by ID", Type = typeof(HttpModel<List<BonusDto>>))]
         [SwaggerResponse((int)HttpStatusCode.InternalServerError)]
-        public async Task<ActionResult<IEnumerable<BonusDto>>> FindBonusByIdAsync([FromRoute] Guid id)
+        public async Task<ActionResult<HttpModel<IEnumerable<BonusDto>>>> FindBonusByIdAsync([FromRoute] Guid id)
         {
-            try
-            {
-                return Ok(await _BonusService.FindBonusByIdAsync(id));
-            }
-            catch (InvalidOperationException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, e.Message);
-            }
-
+            return Ok(await _BonusService.FindBonusByIdAsync(id));
         }
 
-        [HttpPatch]
+        [HttpPut]
         [Route("{id}")]
-        [SwaggerResponse((int)HttpStatusCode.OK, Description = "Bonus updated ", Type = typeof(BonusDto))]
+        [SwaggerResponse((int)HttpStatusCode.OK, Description = "Bonus updated ", Type = typeof(HttpModel<BonusDto>))]
         [SwaggerResponse((int)HttpStatusCode.InternalServerError)]
-        public async Task<ActionResult<BonusDto>> UpdateBonusAsync([FromRoute] Guid id, [FromBody] BonusDto Bonus)
+        public async Task<ActionResult<HttpModel<BonusDto>>> UpdateBonusAsync([FromRoute] Guid id, [FromBody] BonusDto Bonus)
         {
-            try
-            {
-                return Ok(await _BonusService.UpdateBonusAsync(id, Bonus));
-            }
-            catch (InvalidOperationException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, e.Message);
-            }
+            return Ok(await _BonusService.UpdateBonusAsync(id, Bonus));
         }
 
         [HttpDelete]
         [Route("{id}")]
-        [SwaggerResponse((int)HttpStatusCode.OK, Description = "Bonus deleted ", Type = typeof(BonusDto))]
+        [SwaggerResponse((int)HttpStatusCode.OK, Description = "Bonus deleted ", Type = typeof(HttpModel<BonusDto>))]
         [SwaggerResponse((int)HttpStatusCode.InternalServerError)]
-        public async Task<ActionResult<BonusDto>> DeleteBonusAsync([FromRoute] Guid id)
+        public async Task<ActionResult<HttpModel<BonusDto>>> DeleteBonusAsync([FromRoute] Guid id)
         {
-            try
-            {
-                return Ok(await _BonusService.DeleteBonusAsync(id));
-            }
-            catch (InvalidOperationException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (ArgumentException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, e.Message);
-            }
+           return Ok(await _BonusService.DeleteBonusAsync(id));
         }
 
     }
