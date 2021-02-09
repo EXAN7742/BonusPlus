@@ -71,7 +71,9 @@ namespace ExadelBonusPlus.WebApi
 
             app.UseRouting();
 
-            app.UseCors(builder => builder.AllowAnyOrigin());
+            app.UseCors(builder => builder.AllowAnyOrigin()
+                                          .AllowAnyMethod()
+                                          .AllowAnyHeader());
 
             app.UseEndpoints(endpoints =>
             {
