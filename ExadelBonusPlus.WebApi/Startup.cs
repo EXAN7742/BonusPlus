@@ -4,14 +4,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using System.Threading.Tasks;
 using ExadelBonusPlus.Services.Models;
-using AutoMapper;
-using ExadelBonusPlus.DataAccess;
-using ExadelBonusPlus.Services;
-using FluentValidation;
 using FluentValidation.AspNetCore;
 
 namespace ExadelBonusPlus.WebApi
@@ -23,7 +18,7 @@ namespace ExadelBonusPlus.WebApi
         {
             _configuration = configuration;
         }
-        
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<MongoDbSettings>(_configuration.GetSection(
@@ -54,7 +49,7 @@ namespace ExadelBonusPlus.WebApi
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.ApiKey
-            });
+                });
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement{
                     {
                         new OpenApiSecurityScheme
@@ -69,8 +64,10 @@ namespace ExadelBonusPlus.WebApi
                     }
                 });
             });
-            services.AddApiIdentityConfiguration(_configuration);
-            services.AddBonusTransient(services);
+            services.AddBonusTransient();
+            services.AddHistoryTransient();
+            services.AddApiIdentityConfiguration(configuration: _configuration);
+            services.AddVendorTransient();
         }
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -92,9 +89,9 @@ namespace ExadelBonusPlus.WebApi
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            
             app.UseAuthentication();
-
+            app.UseAuthorization();
             app.UseCors(builder => builder.AllowAnyOrigin()
                                           .AllowAnyMethod()
                                           .AllowAnyHeader());
@@ -102,7 +99,8 @@ namespace ExadelBonusPlus.WebApi
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/", context => {
+                endpoints.MapGet("/", context =>
+                {
                     context.Response.Redirect("/swagger/");
                     return Task.CompletedTask;
                 });

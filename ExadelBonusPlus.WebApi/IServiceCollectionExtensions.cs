@@ -1,23 +1,96 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Text;
 using ExadelBonusPlus.DataAccess;
 using ExadelBonusPlus.Services;
 using ExadelBonusPlus.Services.Models;
+using ExadelBonusPlus.Services.Models.DTOValidator;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ExadelBonusPlus.WebApi
 {
     public static class IServiceCollectionExtensions
     {
-        public static void AddBonusTransient(this IServiceCollection iServiceCollection, IServiceCollection services)
+        public static void AddBonusTransient(this IServiceCollection services)
         {
             services.AddTransient<IBonusRepository, BonusRepository>();
             services.AddTransient<IBonusService, BonusService>();
 
+            
+
             services.AddTransient<IValidator<AddBonusDto>, AddBonusDtoValidator>();
             services.AddTransient<IValidator<BonusDto>, BonusDtoValidator>();
+
+
+
+        }
+
+        public static void AddHistoryTransient(this IServiceCollection services)
+        {
+            services.AddTransient<IHistoryRepository, HistoryRepository>();
+            services.AddTransient<IHistoryService, HistoryService>();
+        }
+
+        public static void AddVendorTransient(this IServiceCollection services)
+        {
+            services.AddScoped<IVendorService, VendorService>();
+            services.AddScoped<IVendorRepository, VendorRepository>();
+        }
+
+        public static void AddApiIdentityConfiguration(this IServiceCollection services, IConfiguration configuration)
+        {
+
+            services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IValidator<RegisterUserDTO>, RegisterUserValidator>();
+            services.AddTransient<IValidator<LoginUserDTO>, LoginUserValidator>();
+            services.AddTransient<IValidator<UpdateUserDTO>, UpdateUserValidator>();
+            services.AddTransient<IRoleService, RoleService>();
+            
+            services.AddTransient<ITokenRefreshRepository, TokenRefreshRepository>();
+            services.AddTransient<ITokenRefreshService, TokenRefreshService>();
+
+
+            services.Configure<AppJwtSettings>(configuration.GetSection(
+                nameof(AppJwtSettings)));
+
+            services.AddIdentity<ApplicationUser, ApplicationRole>()
+                .AddMongoDbStores<ApplicationUser, ApplicationRole, Guid>(
+                    configuration["MongoDbSettings:ConnectionString"],
+                    configuration["MongoDbSettings:DatabaseName"])
+                .AddSignInManager()
+                .AddDefaultTokenProviders();
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("DefaultPolicy", policy =>
+                {
+                    policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+                    policy.RequireAuthenticatedUser();
+                });
+            });
+            services.AddAuthentication()
+                .AddCookie(cfg => cfg.SlidingExpiration = true)
+                .AddJwtBearer(cfg =>
+                {
+                    cfg.RequireHttpsMetadata = false;
+                    cfg.SaveToken = true;
+                    cfg.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidateIssuer = false,
+                        ValidIssuer = configuration["AppJwtSettings:Issuer"],
+                        ValidateAudience = false,
+                        ValidAudience = configuration["AppJwtSettings:Audience"],
+                        ValidateIssuerSigningKey = true,
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["AppJwtSettings:SecretKey"]))
+                    };
+                });
+
+
         }
     }
 }
