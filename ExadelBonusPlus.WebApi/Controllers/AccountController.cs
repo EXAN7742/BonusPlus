@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using ExadelBonusPlus.Services;
 using ExadelBonusPlus.Services.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -48,7 +50,8 @@ namespace ExadelBonusPlus.WebApi.Controllers
         {
             var ipAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
             var result = await _userService.LogInAsync(loginUser, ipAddress);
-            return Ok(result);
+            setTokenCookie(result.RefreshToken);
+            return Ok(result.AccessToken);
         }
 
         [HttpPost]
@@ -58,6 +61,7 @@ namespace ExadelBonusPlus.WebApi.Controllers
         public async Task<IActionResult> Logout()
         {
             await _userService.LogOutAsync();
+            Response.Cookies.Delete("refreshToken");
             return Ok();
         }
 
@@ -77,11 +81,26 @@ namespace ExadelBonusPlus.WebApi.Controllers
         [SwaggerResponse((int)HttpStatusCode.OK, Description = "refresh your token", Type = typeof(ResultDto<AuthResponce>))]
         [SwaggerResponse((int)HttpStatusCode.InternalServerError)]
         [AllowAnonymous]
-        public async Task<ActionResult<AuthResponce>> GetRefreshToken( string refreshToken)
+        public async Task<ActionResult<AuthResponce>> GetRefreshToken()
         {
+            var refreshToken = Request.Cookies["refreshToken"];
             var ipAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
             var result = await _userService.RefreshToken(refreshToken, ipAddress);
-            return Ok(result);
+            if (result == null)
+                return Unauthorized(new { message = "Invalid token" });
+            setTokenCookie(result.RefreshToken);
+            return Ok(result.AccessToken);
         }
+
+        private void setTokenCookie(string token)
+        {
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = DateTime.UtcNow.AddDays(2)
+            };
+            Response.Cookies.Append("refreshToken", token, cookieOptions);
+        }
+        
     }
 }
