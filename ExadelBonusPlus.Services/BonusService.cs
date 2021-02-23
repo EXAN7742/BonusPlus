@@ -32,9 +32,13 @@ namespace ExadelBonusPlus.Services
             VendorDto vendorDto = null;
             try
             {
-                vendorDto = await _vendorService.GetVendorByIdAsync(model.CompanyId, cancellationToken);
+                vendorDto = await _vendorService.GetVendorByIdAsync(model.CompanyId);
             }
             catch
+            {
+                throw new ArgumentException(Resources.VendorFindbyIdError);
+            }
+            if (vendorDto == null)
             {
                 throw new ArgumentException(Resources.VendorFindbyIdError);
             }

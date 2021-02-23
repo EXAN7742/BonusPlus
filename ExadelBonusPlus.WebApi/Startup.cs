@@ -8,6 +8,8 @@ using Microsoft.OpenApi.Models;
 using System.Threading.Tasks;
 using ExadelBonusPlus.Services.Models;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
 
 namespace ExadelBonusPlus.WebApi
 {
@@ -24,8 +26,17 @@ namespace ExadelBonusPlus.WebApi
             services.Configure<MongoDbSettings>(_configuration.GetSection(
                 nameof(MongoDbSettings)));
 
-            services.AddCors();
-            
+            services.AddCors(setup =>
+            {
+                setup.AddDefaultPolicy(policy =>
+                {
+                    policy.AllowAnyHeader();
+                    policy.AllowAnyMethod();
+                    policy.SetIsOriginAllowed(origin => true);
+                    policy.AllowCredentials();
+                });
+            });
+
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             
             services.AddControllers(options =>
@@ -33,6 +44,7 @@ namespace ExadelBonusPlus.WebApi
                     options.Filters.Add(typeof(ExceptionFilterAttribute));
                     options.Filters.Add(typeof(ValidationFilterAttribute));
                     options.Filters.Add(typeof(HttpModelResultFilterAttribute));
+                    options.Filters.Add(typeof(LoggongFilterAttribute));
                 })
                 .ConfigureApiBehaviorOptions(options =>
                 {
@@ -70,8 +82,9 @@ namespace ExadelBonusPlus.WebApi
                     }
                 });
             });
+            services.AddLogging();
             services.AddBonusTransient();
-            services.AddHistoryTransient();
+            services.AddHistoryTransient(_configuration);
             services.AddApiIdentityConfiguration(configuration: _configuration);
             services.AddVendorTransient();
         }
@@ -85,12 +98,16 @@ namespace ExadelBonusPlus.WebApi
                 };
                 app.UseDeveloperExceptionPage(developerExceptionPageOptions);
             }
+            app.UseCors();
             app.UseStaticFiles();
 
             app.UseSwagger();
 
             app.UseSwaggerUI(options =>
-                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Exadel Bonus Plus API v1")
+                {
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Exadel Bonus Plus API v1");
+
+                }
             );
 
             app.UseRouting();
@@ -98,9 +115,7 @@ namespace ExadelBonusPlus.WebApi
             
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseCors(builder => builder.AllowAnyOrigin()
-                                          .AllowAnyMethod()
-                                          .AllowAnyHeader());
+            
 
 
             app.UseEndpoints(endpoints =>
@@ -110,9 +125,7 @@ namespace ExadelBonusPlus.WebApi
                     context.Response.Redirect("/swagger/");
                     return Task.CompletedTask;
                 });
-
                 endpoints.MapControllers();
-
             });
         }
     }
