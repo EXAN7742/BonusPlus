@@ -36,6 +36,7 @@ namespace ExadelBonusPlus.WebApi
 
             services.AddTransient<IValidator<AddBonusDto>, AddBonusDtoValidator>();
             services.AddTransient<IValidator<UpdateBonusDto>, UpdateBonusDtoValidator>();
+            services.AddTransient<IValidator<BonusFilter>, BonusFilterValidator>();
         }
 
         public static void AddHistoryTransient(this IServiceCollection services, IConfiguration configuration)
@@ -116,8 +117,6 @@ namespace ExadelBonusPlus.WebApi
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["AppJwtSettings:SecretKey"]))
                     };
                 });
-
-
         }
     }
 }
